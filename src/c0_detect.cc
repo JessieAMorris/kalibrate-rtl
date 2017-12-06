@@ -29,7 +29,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef XTRX_DEV
+#include "xtrx_source.h"
+#else
 #include "usrp_source.h"
+#endif
 #include "circular_buffer.h"
 #include "fcch_detector.h"
 #include "arfcn_freq.h"

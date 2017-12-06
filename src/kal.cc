@@ -55,7 +55,12 @@
 
 #include <errno.h>
 
+#ifdef XTRX_DEV
+#include "xtrx_source.h"
+#else
 #include "usrp_source.h"
+#endif
+
 #include "fcch_detector.h"
 #include "arfcn_freq.h"
 #include "offset.h"
@@ -104,14 +109,23 @@ int main(int argc, char **argv) {
 	char *endptr;
 	int c, antenna = 1, bi = BI_NOT_DEFINED, chan = -1, bts_scan = 0;
 	int ppm_error = 0;
-	unsigned int subdev = 0, decimation = 192;
+	unsigned int subdev = 0, decimation = 32;
+#ifdef XTRX_DEV
+	long int fpga_master_clock_freq = 0;
+#else
 	long int fpga_master_clock_freq = 52000000;
+#endif
 	float gain = 0;
-	double freq = -1.0, fd;
+	double freq = -1.0;
 	usrp_source *u;
+	unsigned loglevel = 2;
 
-	while((c = getopt(argc, argv, "f:c:s:b:R:A:g:e:d:vDh?")) != EOF) {
+	while((c = getopt(argc, argv, "F:l:f:c:s:b:R:A:g:e:d:vDh?")) != EOF) {
 		switch(c) {
+			case 'l':
+				loglevel = atoi(optarg);
+				break;
+
 			case 'f':
 				freq = strtod(optarg, 0);
 				break;
@@ -256,7 +270,7 @@ int main(int argc, char **argv) {
 		printf("debug: Gain                  :\t%f\n", gain);
 	}
 
-	u = new usrp_source(decimation, fpga_master_clock_freq);
+	u = new usrp_source(decimation, fpga_master_clock_freq, loglevel);
 	if(!u) {
 		fprintf(stderr, "error: usrp_source\n");
 		return -1;

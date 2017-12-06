@@ -25,7 +25,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef XTRX_DEV
+#include "xtrx_source.h"
+#else
 #include "usrp_source.h"
+#endif
 #include "fcch_detector.h"
 #include "util.h"
 
