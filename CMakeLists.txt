@@ -16,7 +16,7 @@ add_definitions(-Wall -g)
 #    ${CMAKE_CURRENT_BINARY_DIR}/config.h
 #@ONLY)
 
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 find_package(FFTW)
 find_package(XTRX)
