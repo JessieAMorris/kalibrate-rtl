@@ -55,16 +55,13 @@
 
 #include <errno.h>
 
-#ifdef XTRX_DEV
-#include "xtrx_source.h"
-#else
-#include "usrp_source.h"
-#endif
+#include <SoapySDR/Device.h>
+#include <SoapySDR/Formats.h>
 
 #include "fcch_detector.h"
 #include "arfcn_freq.h"
 #include "offset.h"
-#include "c0_detect.h"
+//#include "c0_detect.h"
 #include "version.h"
 #ifdef _WIN32
 #include <getopt.h>
@@ -107,8 +104,11 @@ void usage(char *prog) {
 int main(int argc, char **argv) {
 
 	char *endptr;
-	int c, antenna = 1, bi = BI_NOT_DEFINED, chan = -1, bts_scan = 0;
-	int ppm_error = 0;
+	int c, bi = BI_NOT_DEFINED, chan = -1;
+	bool bts_scan = false;
+	double ppm_error = 0;
+	char *device_args;
+	char *antenna = NULL;
 	unsigned int subdev = 0, decimation = 32;
 #ifdef XTRX_DEV
 	long int fpga_master_clock_freq = 0;
@@ -117,10 +117,10 @@ int main(int argc, char **argv) {
 #endif
 	float gain = 0;
 	double freq = -1.0;
-	usrp_source *u;
+	//usrp_source *u;
 	unsigned loglevel = 2;
 
-	while((c = getopt(argc, argv, "F:l:f:c:s:b:R:A:g:e:d:vDh?")) != EOF) {
+	while((c = getopt(argc, argv, "F:l:f:c:s:b:R:a:A:g:e:d:vDh?")) != EOF) {
 		switch(c) {
 			case 'l':
 				loglevel = atoi(optarg);
@@ -136,11 +136,10 @@ int main(int argc, char **argv) {
 
 			case 's':
 				if((bi = str_to_bi(optarg)) == -1) {
-					fprintf(stderr, "error: bad band "
-					   "indicator: ``%s''\n", optarg);
+					fprintf(stderr, "error: bad band indicator: ``%s''\n", optarg);
 					usage(argv[0]);
 				}
-				bts_scan = 1;
+				bts_scan = true;
 				break;
 
 			case 'b':
@@ -169,24 +168,15 @@ int main(int argc, char **argv) {
 				break;
 
 			case 'A':
-				if(!strcmp(optarg, "RX2")) {
-					antenna = 1;
-				} else if(!strcmp(optarg, "TX/RX")) {
-					antenna = 0;
-				} else {
-					errno = 0;
-					antenna = strtoul(optarg, &endptr, 0);
-					if(errno || (endptr == optarg)) {
-						fprintf(stderr, "error: bad "
-						   "antenna: ``%s''\n",
-						   optarg);
-						usage(argv[0]);
-					}
-				}
+				device_args = optarg;
+				break;
+
+			case 'a':
+				antenna = optarg;
 				break;
 
 			case 'g':
-				gain = strtof(optarg, 0) * 10;
+				gain = strtof(optarg, 0);
 				break;
 
 			case 'F':
@@ -201,7 +191,7 @@ int main(int argc, char **argv) {
 				break;
 
 			case 'e':
-				ppm_error = strtol(optarg, 0, 0);
+				ppm_error = strtod(optarg, &endptr);
 				break;
 
 			case 'd':
@@ -266,50 +256,117 @@ int main(int argc, char **argv) {
 		printf("debug: FPGA Master Clock Freq:\t%li\n", fpga_master_clock_freq);
 		printf("debug: decimation            :\t%u\n", decimation);
 		printf("debug: RX Subdev Spec        :\t%s\n", subdev? "B" : "A");
-		printf("debug: Antenna               :\t%s\n", antenna? "RX2" : "TX/RX");
 		printf("debug: Gain                  :\t%f\n", gain);
 	}
 
-	u = new usrp_source(decimation, fpga_master_clock_freq, loglevel);
-	if(!u) {
-		fprintf(stderr, "error: usrp_source\n");
-		return -1;
-	}
-	if(u->open(subdev) == -1) {
-		fprintf(stderr, "error: usrp_source::open\n");
-		return -1;
-	}
-//	u->set_antenna(antenna);
-	if (gain != 0) {
-		if(!u->set_gain(gain)) {
-			fprintf(stderr, "error: usrp_source::set_gain\n");
-			return -1;
+	size_t length;
+
+	//enumerate devices
+	SoapySDRKwargs *devices = SoapySDRDevice_enumerateStrArgs(device_args, &length);
+
+	for (size_t i = 0; i < length; i++) {
+		printf("Found device #%d: ", (int)i);
+		for (size_t j = 0; j < devices[i].size; j++)
+		{
+			printf("%s=%s, ", devices[i].keys[j], devices[i].vals[j]);
 		}
+		printf("\n");
+	}
+
+	if(!length) {
+		fprintf(stderr, "error finding a source device\n");
+
+		return EXIT_FAILURE;
+	} else {
+		printf("Using the first device found...\n");
+	}
+
+	//create device instance
+	//args can be user defined or from the enumeration result
+	SoapySDRDevice *sdr = SoapySDRDevice_make(&devices[0]);
+	SoapySDRKwargsList_clear(devices, length);
+
+	if (sdr == NULL) {
+		fprintf(stderr, "SoapySDRDevice_make fail: %s\n", SoapySDRDevice_lastError());
+		return EXIT_FAILURE;
+	}
+
+	//query device info
+	char** names = SoapySDRDevice_listAntennas(sdr, SOAPY_SDR_RX, 0, &length);
+	bool antenna_found = false;
+	printf("Rx antennas: ");
+	for (size_t i = 0; i < length; i++) {
+		printf("%s, ", names[i]);
+
+		if(antenna != NULL && strcmp(names[i], antenna)) {
+			antenna_found = true;
+		}
+	}
+	printf("\n");
+
+	if(antenna == NULL) {
+		antenna = names[0];
+		antenna_found = true;
+	}
+
+	printf("Using antenna: %s \n", antenna);
+
+	SoapySDRStrings_clear(&names, length);
+
+	SoapySDRRange *ranges = SoapySDRDevice_getSampleRateRange(sdr, SOAPY_SDR_RX, 0, &length);
+	printf("Sample rates: ");
+	for (size_t i = 0; i < length; i++) {
+		printf("%g:%g, ", ranges[i].minimum, ranges[i].maximum);
+	}
+	printf("\n");
+
+	if(SoapySDRDevice_setBandwidth(sdr, SOAPY_SDR_RX, 0, 2e6) != 0) {
+		fprintf(stderr, "Error setting bandwidth\n");
+		return EXIT_FAILURE;
+	}
+
+	if(SoapySDRDevice_setSampleRate(sdr, SOAPY_SDR_RX, 0, 20e6) != 0) {
+		fprintf(stderr, "Error setting sample rate\n");
+		return EXIT_FAILURE;
+	}
+
+	if(!antenna_found) {
+		fprintf(stderr, "Antenna not found: %s\n", antenna);
+		return EXIT_FAILURE;
+	}
+
+	if(gain != 0) {
+		printf("Setting gain: %4.2f\n", gain);
+		SoapySDRDevice_setGain(sdr, SOAPY_SDR_RX, 0, gain);
 	}
 
 	if (ppm_error != 0) {
-		if(u->set_freq_correction(ppm_error) < 0) {
-			fprintf(stderr, "error: usrp_source::set_freq_correction\n");
-			return -1;
+		printf("Setting initial frequency error: %4.2f\n", ppm_error);
+		if(SoapySDRDevice_setFrequencyCorrection(sdr, SOAPY_SDR_RX, 0, ppm_error) != 0) {
+			fprintf(stderr, "Error setting frequency correction\n");
+			return EXIT_FAILURE;
 		}
 	}
 
+	int ret = 0;
 	if(!bts_scan) {
-		if(!u->tune(freq)) {
-			fprintf(stderr, "error: usrp_source::tune\n");
-			return -1;
+		printf("Setting frequency: %f\n", freq);
+		if (SoapySDRDevice_setFrequency(sdr, SOAPY_SDR_RX, 0, freq, NULL) != 0) {
+			fprintf(stderr, "Error setting frequency\n");
+			return EXIT_FAILURE;
 		}
 
-		fprintf(stderr, "%s: Calculating clock frequency offset.\n",
-		   basename(argv[0]));
-		fprintf(stderr, "Using %s channel %d (%.1fMHz)\n",
-		   bi_to_str(bi), chan, freq / 1e6);
+		fprintf(stderr, "%s: Calculating clock frequency offset.\n", basename(argv[0]));
+		fprintf(stderr, "Using %s channel %d (%.1fMHz)\n", bi_to_str(bi), chan, freq / 1e6);
 
-		return offset_detect(u);
+		ret = offset_detect(sdr);
+	} else {
+		fprintf(stderr, "%s: Scanning for %s base stations.\n", basename(argv[0]), bi_to_str(bi));
+
+		return c0_detect(sdr, bi);
 	}
 
-	fprintf(stderr, "%s: Scanning for %s base stations.\n",
-	   basename(argv[0]), bi_to_str(bi));
+	SoapySDRDevice_unmake(sdr);
 
-	return c0_detect(u, bi);
+	return ret;
 }

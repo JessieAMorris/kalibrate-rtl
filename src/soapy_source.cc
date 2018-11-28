@@ -43,7 +43,7 @@
 #include <SoapySDR/Device.h>
 #include <SoapySDR/Formats.h>
 
-#include "xtrx_source.h"
+#include "soapy_source.h"
 
 extern int g_verbosity;
 
@@ -52,12 +52,11 @@ extern int g_verbosity;
 inline double round(double x) { return floor(x + 0.5); }
 #endif
 
-xtrx_source::xtrx_source(float sample_rate, long int fpga_master_clock_freq, int loglevel) {
-
-	m_fpga_master_clock_freq = fpga_master_clock_freq;
+soapy_source::soapy_source(const std::String &args, float sample_rate, int loglevel) {
 	m_desired_sample_rate = sample_rate;
 	m_sample_rate = 0.0;
 	m_decimation = 0;
+	m_args = args;
 	m_cb = new circular_buffer(CB_LEN, sizeof(complex), 0);
 
 	pthread_mutex_init(&m_u_mutex, 0);
@@ -66,26 +65,7 @@ xtrx_source::xtrx_source(float sample_rate, long int fpga_master_clock_freq, int
 }
 
 
-xtrx_source::xtrx_source(unsigned int decimation, long int fpga_master_clock_freq, int loglevel) {
-
-	m_fpga_master_clock_freq = fpga_master_clock_freq;
-	m_sample_rate = 0.0;
-	m_cb = new circular_buffer(CB_LEN, sizeof(complex), 0);
-
-	pthread_mutex_init(&m_u_mutex, 0);
-
-	m_decimation = decimation & ~1;
-	if(m_decimation < 4)
-		m_decimation = 4;
-	if(m_decimation > 256)
-		m_decimation = 256;
-
-	m_loglevel = loglevel;
-}
-
-
-xtrx_source::~xtrx_source() {
-
+soapy_source::~soapy_source() {
 	stop();
 	delete m_cb;
 	xtrx_close(dev);
@@ -93,21 +73,19 @@ xtrx_source::~xtrx_source() {
 }
 
 
-void xtrx_source::stop() {
+void soapy_source::stop() {
 
 	pthread_mutex_lock(&m_u_mutex);
 
-	xtrx_stop(dev, XTRX_RX);
+	SoapySDR::Device::unmake(dev);
 
 	pthread_mutex_unlock(&m_u_mutex);
 }
 
 
-void xtrx_source::start() {
+void soapy_source::start() {
 
 	pthread_mutex_lock(&m_u_mutex);
-
-	xtrx_stop(dev, XTRX_RX);
 
 	xtrx_run_params_t params;
 	params.dir = XTRX_RX;
@@ -120,7 +98,7 @@ void xtrx_source::start() {
 	params.rx_stream_start = 20000;
 	params.rx.scale = 32767;
 
-	int r = xtrx_run_ex(dev, &params);
+	dev.setupStream(SOAPY_SDR_RX, "CF32", NULL, NULL);
 	if (r < 0)
 		fprintf(stderr, "WARNING: Failed to run streaming.\n");
 
@@ -128,14 +106,14 @@ void xtrx_source::start() {
 }
 
 
-float xtrx_source::sample_rate() {
+float soapy_source::sample_rate() {
 
 	return m_sample_rate;
 
 }
 
 
-int xtrx_source::tune(double freq) {
+int soapy_source::tune(double freq) {
 	double actual;
 	int r = 0;
 
@@ -154,7 +132,7 @@ int xtrx_source::tune(double freq) {
 	return 1; //(r < 0) ? 0 : 1;
 }
 
-int xtrx_source::set_freq_correction(int ppm) {
+int soapy_source::set_freq_correction(int ppm) {
 	m_freq_corr = ppm;
 	//return rtlsdr_set_freq_correction(dev, ppm);
 	//abort();
@@ -163,12 +141,12 @@ int xtrx_source::set_freq_correction(int ppm) {
 	return 1;
 }
 
-bool xtrx_source::set_antenna(int antenna) {
+bool soapy_source::set_antenna(int antenna) {
 
 	return 0;
 }
 
-bool xtrx_source::set_gain(float gain) {
+bool soapy_source::set_gain(float gain) {
 	int r;
 	double actual;
 
@@ -182,19 +160,19 @@ bool xtrx_source::set_gain(float gain) {
 
 
 /*
- * open() should be called before multiple threads access xtrx_source.
+ * open() should be called before multiple threads access soapy_source.
  */
-int xtrx_source::open(unsigned int subdev) {
+int soapy_source::open(unsigned int subdev) {
 	int r;
 	uint32_t dev_index = subdev;
 	double samp_rate = 13e6 / 48.0;
 	double actual, abw;
 	double master = 0;
 
-	r = xtrx_open("/dev/xtrx0", m_loglevel, &dev);
-	if (r < 0) {
-		fprintf(stderr, "Failed to open xtrx device %d\n", dev_index);
-		exit(1);
+	dev = SoapySDRDevice_make();
+	if (dev == NULL) {
+		fprintf(stderr, "SoapySDRDevice_make fail: %s\n", SoapySDRDevice_lastError());
+		return exit(1);
 	}
 
 	if (m_fpga_master_clock_freq != 0) {
@@ -229,7 +207,7 @@ int xtrx_source::open(unsigned int subdev) {
 }
 
 
-int xtrx_source::fill(unsigned int num_samples, unsigned int *overrun_i) {
+int soapy_source::fill(unsigned int num_samples, unsigned int *overrun_i) {
 	complex *c;
 	unsigned avail, j;
 	unsigned overruns = 0;
@@ -298,7 +276,7 @@ int xtrx_source::fill(unsigned int num_samples, unsigned int *overrun_i) {
 }
 
 
-int xtrx_source::read(complex *buf, unsigned int num_samples,
+int soapy_source::read(complex *buf, unsigned int num_samples,
    unsigned int *samples_read) {
 
 	unsigned int n;
@@ -318,13 +296,13 @@ int xtrx_source::read(complex *buf, unsigned int num_samples,
 /*
  * Don't hold a lock on this and use the usrp at the same time.
  */
-circular_buffer *xtrx_source::get_buffer() {
+circular_buffer *soapy_source::get_buffer() {
 
 	return m_cb;
 }
 
 #define FLUSH_SIZE		8192
-int xtrx_source::flush(unsigned int flush_count) {
+int soapy_source::flush(unsigned int flush_count) {
 
 	unsigned i;
 

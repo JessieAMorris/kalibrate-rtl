@@ -29,12 +29,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef XTRX_DEV
-#include "xtrx_source.h"
-#else
-#include "usrp_source.h"
-#endif
-#include "circular_buffer.h"
+#include <SoapySDR/Device.h>
+#include <SoapySDR/Formats.h>
+
 #include "fcch_detector.h"
 #include "arfcn_freq.h"
 #include "util.h"
@@ -59,7 +56,7 @@ static double vectornorm2(const complex *v, const unsigned int len) {
 }
 
 
-int c0_detect(usrp_source *u, int bi) {
+int c0_detect(SoapySDRDevice *sdr, int bi) {
 
 #define GSM_RATE (1625000.0 / 6.0)
 #define  NOTFOUND_MAX 10

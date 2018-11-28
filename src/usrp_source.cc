@@ -241,8 +241,9 @@ int usrp_source::fill(unsigned int num_samples, unsigned int *overrun_i) {
 		space = n_read / 2;
 
 		// write data
-		for(i = 0, j = 0; i < space; i += 1, j += 2)
+		for(i = 0, j = 0; i < space; i += 1, j += 2) {
 			c[i] = complex((ubuf[j] - 127) * 256, (ubuf[j + 1] - 127) * 256);
+		}
 
 		// update cb
 		m_cb->wrote(i);

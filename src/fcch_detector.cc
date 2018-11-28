@@ -53,22 +53,21 @@ extern int g_debug;
 static const char * const fftw_plan_name = ".kal_fftw_plan";
 
 
-fcch_detector::fcch_detector(const float sample_rate, const unsigned int D,
-   const float p, const float G) {
+fcch_detector::fcch_detector(const double sample_rate, const unsigned int delay,
+		const float power, const float gradient) {
 
 	FILE *plan_fp;
 	char plan_name[BUFSIZ];
 	const char *home;
 
 
-	m_D = D;
-	m_p = p;
-	m_G = G;
-	m_e = 0.0;
+	m_delay = delay;
+	m_power = power;
+	m_gradient = gradient;
+	m_error = 0.0;
 
 	m_sample_rate = sample_rate;
-	m_fcch_burst_len =
-	   (unsigned int)(148.0 * (m_sample_rate / GSM_RATE));
+	m_fcch_burst_len = (unsigned int)(148.0 * (m_sample_rate / GSM_RATE));
 
 	m_filter_delay = 8;
 	m_w_len = 2 * m_filter_delay + 1;
@@ -81,8 +80,9 @@ fcch_detector::fcch_detector(const float sample_rate, const unsigned int D,
 
 	m_in = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * FFT_SIZE);
 	m_out = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * FFT_SIZE);
-	if((!m_in) || (!m_out))
+	if((!m_in) || (!m_out)) {
 		throw std::runtime_error("fcch_detector: fftw_malloc failed!");
+	}
 #ifndef _WIN32
 	home = getenv("HOME");
 	if(strlen(home) + strlen(fftw_plan_name) + 2 < sizeof(plan_name)) {
@@ -101,10 +101,10 @@ fcch_detector::fcch_detector(const float sample_rate, const unsigned int D,
 		}
 	} else
 #endif
-		m_plan = fftw_plan_dft_1d(FFT_SIZE, m_in, m_out, FFTW_FORWARD,
-		   FFTW_ESTIMATE);
-	if(!m_plan)
+		m_plan = fftw_plan_dft_1d(FFT_SIZE, m_in, m_out, FFTW_FORWARD, FFTW_ESTIMATE);
+	if(!m_plan) {
 		throw std::runtime_error("fcch_detector: fftw plan failed!");
+	}
 }
 
 
@@ -271,7 +271,7 @@ static inline float peak_detect(const complex *s, const unsigned int s_len, comp
 }
 
 
-static inline float itof(float index, float sample_rate, unsigned int fft_size) {
+static inline float itof(float index, double sample_rate, unsigned int fft_size) {
 
 	double r = index * (sample_rate / (double)fft_size);
 
@@ -285,7 +285,7 @@ static inline float itof(float index, float sample_rate, unsigned int fft_size) 
 }
 
 
-static inline unsigned int ftoi(float frequency, float sample_rate, unsigned int fft_size) {
+static inline unsigned int ftoi(float frequency, double sample_rate, unsigned int fft_size) {
 
 	unsigned int r = (frequency / sample_rate) * fft_size;
 
@@ -420,7 +420,7 @@ unsigned int fcch_detector::update(const complex *s, const unsigned int s_len) {
 
 unsigned int fcch_detector::get_delay() {
 
-	return m_w_len - 1 + m_D;
+	return m_w_len - 1 + m_delay;
 }
 
 
@@ -443,11 +443,11 @@ static float vectornorm2(const complex *v, const unsigned int len) {
 
 
 /*
- * First y value comes out at sample x[n + m_D] = x[w_len - 1 + m_D].
+ * First y value comes out at sample x[n + m_delay] = x[w_len - 1 + m_delay].
  *
- * 	y[0] = X(x[0], ..., x[w_len - 1 + m_D])
+ * 	y[0] = X(x[0], ..., x[w_len - 1 + m_delay])
  *
- * So y and e are delayed by w_len - 1 + m_D.
+ * So y and e are delayed by w_len - 1 + m_delay.
  */
 int fcch_detector::next_norm_error(float *error) {
 
@@ -460,35 +460,37 @@ int fcch_detector::next_norm_error(float *error) {
 
 	// ensure there are enough samples in the buffer
 	x = (complex *)m_x_cb->peek(&max);
-	if(n + m_D >= max)
-		return n + m_D - max + 1;
+	if(n + m_delay >= max)
+		return n + m_delay - max + 1;
 
-	// update G
+	// update gradient
 	E = vectornorm2(x, m_w_len);
-	if(m_G >= 2.0 / E)
-		m_G = 1.0 / E;
+	if(m_gradient >= 2.0 / E)
+		m_gradient = 1.0 / E;
 
 	// calculate filtered value
 	y = 0.0;
 	for(i = 0; i < m_w_len; i++)
 		y += std::conj(m_w[i]) * x[n - i];
 	// m_y_cb->write(&y, 1);
-	m_y_cb->write(x + n + m_D, 1); // XXX save filtered value?
+	m_y_cb->write(x + n + m_delay, 1); // XXX save filtered value?
 
 	// calculate error from desired signal
-	e = x[n + m_D] - y;
+	e = x[n + m_delay] - y;
 
 	// update filters with opposite gradient
-	for(i = 0; i < m_w_len; i++)
-		m_w[i] += m_G * std::conj(e) * x[n - i];
+	for(i = 0; i < m_w_len; i++) {
+		m_w[i] += m_gradient * std::conj(e) * x[n - i];
+	}
 
 	// update error average power
 	E /= m_w_len;
-	m_e = (1.0 - m_p) * m_e + m_p * norm(e);
+	m_error = (1.0 - m_power) * m_error + m_power * norm(e);
 
 	// return error ratio
-	if(error)
-		*error = m_e / E;
+	if(error) {
+		*error = m_error / E;
+	}
 
 	// remove the processed sample from the buffer
 	m_x_cb->purge(1);

@@ -1,0 +1,121 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+AVG_COUNT	src/offset.cc	/^static const unsigned int AVG_COUNT = 100;$/;"	v	file:
+AVG_THRESHOLD	src/offset.cc	/^static const unsigned int AVG_THRESHOLD = (AVG_COUNT \/ 10);$/;"	v	file:
+BUFSIZ	src/c0_detect.cc	47;"	d	file:
+CB_LEN	src/offset.cc	/^static const unsigned int CB_LEN = (16 * 16384);$/;"	v	file:
+ERROR_DETECT_OFFSET_MAX	src/c0_detect.cc	/^static const float ERROR_DETECT_OFFSET_MAX = 40e3;$/;"	v	file:
+FLUSH_SIZE	src/usrp_source.cc	214;"	d	file:
+FLUSH_SIZE	src/xtrx_source.cc	326;"	d	file:
+GSM_RATE	src/c0_detect.cc	64;"	d	file:
+GSM_RATE	src/kal.cc	72;"	d	file:
+GSM_RATE	src/offset.cc	54;"	d	file:
+HIGH	src/fcch_detector.cc	/^	HIGH	= 1$/;"	e	enum:__anon1	file:
+LOW	src/fcch_detector.cc	/^	LOW	= 0,$/;"	e	enum:__anon1	file:
+MIN	src/circular_buffer.cc	422;"	d	file:
+MIN	src/fcch_detector.cc	297;"	d	file:
+NOTFOUND_MAX	src/c0_detect.cc	65;"	d	file:
+OFFSET_MAX	src/offset.cc	/^static const float OFFSET_MAX = 40e3;$/;"	v	file:
+PACKAGE_VERSION	src/kal.cc	42;"	d	file:
+USB_PACKET_SIZE	src/usrp_source.cc	213;"	d	file:
+_USE_MATH_DEFINES	src/usrp_source.cc	36;"	d	file:
+_USE_MATH_DEFINES	src/util.cc	30;"	d	file:
+_USE_MATH_DEFINES	src/xtrx_source.cc	37;"	d	file:
+arfcn_to_freq	src/arfcn_freq.cc	/^double arfcn_to_freq(int n, int *bi) {$/;"	f
+avg	src/util.cc	/^double avg(float *b, unsigned int len, float *stddev) {$/;"	f
+basename	src/kal.cc	68;"	d	file:
+bi_to_str	src/arfcn_freq.cc	/^const char *bi_to_str(int bi) {$/;"	f
+buf_len	src/circular_buffer.cc	/^unsigned int circular_buffer::buf_len() {$/;"	f	class:circular_buffer
+c0_detect	src/c0_detect.cc	/^int c0_detect(usrp_source *u, int bi) {$/;"	f
+calculate_decimation	src/usrp_source.cc	/^void usrp_source::calculate_decimation() {$/;"	f	class:usrp_source
+circular_buffer	src/circular_buffer.cc	/^circular_buffer::circular_buffer(const unsigned int buf_len,$/;"	f	class:circular_buffer
+data_available	src/circular_buffer.cc	/^unsigned int circular_buffer::data_available() {$/;"	f	class:circular_buffer
+display_complex	src/fcch_detector.cc	/^static inline void display_complex(const complex *s, unsigned int s_len) {$/;"	f	file:
+display_freq	src/util.cc	/^void display_freq(float f) {$/;"	f
+dump_x	src/fcch_detector.cc	/^complex *fcch_detector::dump_x(unsigned int *x_len) {$/;"	f	class:fcch_detector
+dump_y	src/fcch_detector.cc	/^complex *fcch_detector::dump_y(unsigned int *y_len) {$/;"	f	class:fcch_detector
+fcch_detector	src/fcch_detector.cc	/^fcch_detector::fcch_detector(const double sample_rate, const unsigned int delay,$/;"	f	class:fcch_detector
+fftw_plan_name	src/fcch_detector.cc	/^static const char * const fftw_plan_name = ".kal_fftw_plan";$/;"	v	file:
+fill	src/usrp_source.cc	/^int usrp_source::fill(unsigned int num_samples, unsigned int *overrun_i) {$/;"	f	class:usrp_source
+fill	src/xtrx_source.cc	/^int xtrx_source::fill(unsigned int num_samples, unsigned int *overrun_i) {$/;"	f	class:xtrx_source
+filter_len	src/fcch_detector.cc	/^unsigned int fcch_detector::filter_len() {$/;"	f	class:fcch_detector
+first_chan	src/arfcn_freq.cc	/^int first_chan(int bi) {$/;"	f
+flush	src/circular_buffer.cc	/^void circular_buffer::flush() {$/;"	f	class:circular_buffer
+flush	src/usrp_source.cc	/^int usrp_source::flush(unsigned int flush_count) {$/;"	f	class:usrp_source
+flush	src/xtrx_source.cc	/^int xtrx_source::flush(unsigned int flush_count) {$/;"	f	class:xtrx_source
+flush_nolock	src/circular_buffer.cc	/^void circular_buffer::flush_nolock() {$/;"	f	class:circular_buffer
+freq_detect	src/fcch_detector.cc	/^float fcch_detector::freq_detect(const complex *s, const unsigned int s_len, float *pm) {$/;"	f	class:fcch_detector
+freq_to_arfcn	src/arfcn_freq.cc	/^int freq_to_arfcn(double freq, int *bi) {$/;"	f
+ftoi	src/fcch_detector.cc	/^static inline unsigned int ftoi(float frequency, double sample_rate, unsigned int fft_size) {$/;"	f	file:
+g_block_s	src/fcch_detector.cc	/^		    g_block_s = HIGH;$/;"	v	file:
+g_count	src/fcch_detector.cc	/^static unsigned int g_count = 0,$/;"	v	file:
+g_debug	src/kal.cc	/^int g_debug = 0;$/;"	v
+g_verbosity	src/kal.cc	/^int g_verbosity = 0;$/;"	v
+get_buffer	src/usrp_source.cc	/^circular_buffer *usrp_source::get_buffer() {$/;"	f	class:usrp_source
+get_buffer	src/xtrx_source.cc	/^circular_buffer *xtrx_source::get_buffer() {$/;"	f	class:xtrx_source
+get_delay	src/fcch_detector.cc	/^unsigned int fcch_detector::get_delay() {$/;"	f	class:fcch_detector
+interpolate_point	src/fcch_detector.cc	/^static inline complex interpolate_point(const complex *s, const unsigned int s_len, const float s_i) {$/;"	f	file:
+itof	src/fcch_detector.cc	/^static inline float itof(float index, double sample_rate, unsigned int fft_size) {$/;"	f	file:
+lock	src/circular_buffer.cc	/^void circular_buffer::lock() {$/;"	f	class:circular_buffer
+low_to_high	src/fcch_detector.cc	/^static inline unsigned int low_to_high(float e, float a) {$/;"	f	file:
+low_to_high_init	src/fcch_detector.cc	/^static inline void low_to_high_init() {$/;"	f	file:
+main	src/kal.cc	/^int main(int argc, char **argv) {$/;"	f
+next_chan	src/arfcn_freq.cc	/^int next_chan(int chan, int bi) {$/;"	f
+next_chan_loop	src/arfcn_freq.cc	/^int next_chan_loop(int chan, int bi) {$/;"	f
+next_norm_error	src/fcch_detector.cc	/^int fcch_detector::next_norm_error(float *error) {$/;"	f	class:fcch_detector
+offset_detect	src/offset.cc	/^int offset_detect(SoapySDRDevice *sdr) {$/;"	f
+open	src/usrp_source.cc	/^int usrp_source::open(unsigned int subdev) {$/;"	f	class:usrp_source
+open	src/xtrx_source.cc	/^int xtrx_source::open(unsigned int subdev) {$/;"	f	class:xtrx_source
+peak_detect	src/fcch_detector.cc	/^static inline float peak_detect(const complex *s, const unsigned int s_len, complex *peak, float *avg_power) {$/;"	f	file:
+peak_valley	src/fcch_detector.cc	/^static inline int peak_valley(complex *c, unsigned int c_len, complex peak, unsigned int peak_i, unsigned int width, float *p2m) {$/;"	f	file:
+peek	src/circular_buffer.cc	/^void *circular_buffer::peek(unsigned int *buf_len) {$/;"	f	class:circular_buffer
+poke	src/circular_buffer.cc	/^void *circular_buffer::poke(unsigned int *buf_len) {$/;"	f	class:circular_buffer
+purge	src/circular_buffer.cc	/^unsigned int circular_buffer::purge(const unsigned int buf_len) {$/;"	f	class:circular_buffer
+read	src/circular_buffer.cc	/^unsigned int circular_buffer::read(void *buf, const unsigned int buf_len) {$/;"	f	class:circular_buffer
+read	src/usrp_source.cc	/^int usrp_source::read(complex *buf, unsigned int num_samples,$/;"	f	class:usrp_source
+read	src/xtrx_source.cc	/^int xtrx_source::read(complex *buf, unsigned int num_samples,$/;"	f	class:xtrx_source
+round	src/offset.cc	/^inline double round(double x) { return floor(x + 0.5); }$/;"	f
+round	src/usrp_source.cc	/^inline double round(double x) { return floor(x + 0.5); }$/;"	f
+round	src/xtrx_source.cc	/^inline double round(double x) { return floor(x + 0.5); }$/;"	f
+sample_rate	src/usrp_source.cc	/^float usrp_source::sample_rate() {$/;"	f	class:usrp_source
+sample_rate	src/xtrx_source.cc	/^float xtrx_source::sample_rate() {$/;"	f	class:xtrx_source
+scan	src/fcch_detector.cc	/^unsigned int fcch_detector::scan(const complex *s, const unsigned int s_len, float *offset, unsigned int *consumed) {$/;"	f	class:fcch_detector
+set_antenna	src/usrp_source.cc	/^bool usrp_source::set_antenna(int antenna) {$/;"	f	class:usrp_source
+set_antenna	src/xtrx_source.cc	/^bool xtrx_source::set_antenna(int antenna) {$/;"	f	class:xtrx_source
+set_freq_correction	src/usrp_source.cc	/^int usrp_source::set_freq_correction(int ppm) {$/;"	f	class:usrp_source
+set_freq_correction	src/xtrx_source.cc	/^int xtrx_source::set_freq_correction(int ppm) {$/;"	f	class:xtrx_source
+set_gain	src/usrp_source.cc	/^bool usrp_source::set_gain(float gain) {$/;"	f	class:usrp_source
+set_gain	src/xtrx_source.cc	/^bool xtrx_source::set_gain(float gain) {$/;"	f	class:xtrx_source
+sinc	src/fcch_detector.cc	/^static inline float sinc(const float x) {$/;"	f	file:
+sort	src/util.cc	/^void sort(float *b, unsigned int len) {$/;"	f
+space_available	src/circular_buffer.cc	/^unsigned int circular_buffer::space_available() {$/;"	f	class:circular_buffer
+start	src/usrp_source.cc	/^void usrp_source::start() {$/;"	f	class:usrp_source
+start	src/xtrx_source.cc	/^void xtrx_source::start() {$/;"	f	class:xtrx_source
+stop	src/usrp_source.cc	/^void usrp_source::stop() {$/;"	f	class:usrp_source
+stop	src/xtrx_source.cc	/^void xtrx_source::stop() {$/;"	f	class:xtrx_source
+str_to_bi	src/arfcn_freq.cc	/^int str_to_bi(char *s) {$/;"	f
+strtof	src/kal.cc	69;"	d	file:
+tune	src/usrp_source.cc	/^int usrp_source::tune(double freq) {$/;"	f	class:usrp_source
+tune	src/xtrx_source.cc	/^int xtrx_source::tune(double freq) {$/;"	f	class:xtrx_source
+unlock	src/circular_buffer.cc	/^void circular_buffer::unlock() {$/;"	f	class:circular_buffer
+update	src/fcch_detector.cc	/^unsigned int fcch_detector::update(const complex *s, const unsigned int s_len) {$/;"	f	class:fcch_detector
+usage	src/kal.cc	/^void usage(char *prog) {$/;"	f
+usrp_source	src/usrp_source.cc	/^usrp_source::usrp_source(float sample_rate, long int fpga_master_clock_freq) {$/;"	f	class:usrp_source
+usrp_source	src/usrp_source.cc	/^usrp_source::usrp_source(unsigned int decimation, long int fpga_master_clock_freq) {$/;"	f	class:usrp_source
+vectornorm2	src/c0_detect.cc	/^static double vectornorm2(const complex *v, const unsigned int len) {$/;"	f	file:
+vectornorm2	src/fcch_detector.cc	/^static float vectornorm2(const complex *v, const unsigned int len) {$/;"	f	file:
+write	src/circular_buffer.cc	/^unsigned int circular_buffer::write(const void *buf,$/;"	f	class:circular_buffer
+wrote	src/circular_buffer.cc	/^void circular_buffer::wrote(unsigned int len) {$/;"	f	class:circular_buffer
+x_buf_len	src/fcch_detector.cc	/^unsigned int fcch_detector::x_buf_len() {$/;"	f	class:fcch_detector
+x_purge	src/fcch_detector.cc	/^unsigned int fcch_detector::x_purge(unsigned int len) {$/;"	f	class:fcch_detector
+xtrx_source	src/xtrx_source.cc	/^xtrx_source::xtrx_source(float sample_rate, long int fpga_master_clock_freq, int loglevel) {$/;"	f	class:xtrx_source
+xtrx_source	src/xtrx_source.cc	/^xtrx_source::xtrx_source(unsigned int decimation, long int fpga_master_clock_freq, int loglevel) {$/;"	f	class:xtrx_source
+y_buf_len	src/fcch_detector.cc	/^unsigned int fcch_detector::y_buf_len() {$/;"	f	class:fcch_detector
+~circular_buffer	src/circular_buffer.cc	/^circular_buffer::~circular_buffer() {$/;"	f	class:circular_buffer
+~fcch_detector	src/fcch_detector.cc	/^fcch_detector::~fcch_detector() {$/;"	f	class:fcch_detector
+~usrp_source	src/usrp_source.cc	/^usrp_source::~usrp_source() {$/;"	f	class:usrp_source
+~xtrx_source	src/xtrx_source.cc	/^xtrx_source::~xtrx_source() {$/;"	f	class:xtrx_source

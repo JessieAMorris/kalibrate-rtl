@@ -49,7 +49,7 @@
 class fcch_detector {
 
 public:
-	fcch_detector(const float sample_rate, const unsigned int D = 8, const float p = 1.0 / 32.0, const float G = 1.0 / 12.5);
+	fcch_detector(const double sample_rate, const unsigned int delay = 8, const float power = 1.0 / 32.0, const float gradient = 1.0 / 12.5);
 	~fcch_detector();
 	unsigned int scan(const complex *s, const unsigned int s_len, float *offset, unsigned int *consumed);
 	float freq_detect(const complex *s, const unsigned int s_len, float *pm);
@@ -68,21 +68,21 @@ private:
 #define GSM_RATE (1625000.0 / 6.0)
 #define FFT_SIZE 1024
 
-	unsigned int	m_w_len,
-			m_D,
-			m_check_G,
-			m_filter_delay,
-			m_lpf_len,
-			m_fcch_burst_len;
-	float		m_sample_rate,
-			m_p,
-			m_G,
-			m_e;
-	complex 	*m_w;
-	circular_buffer *m_x_cb,
-			*m_y_cb,
-			*m_e_cb;
+	unsigned int m_w_len;
+	unsigned int m_delay;
+	unsigned int m_check_G;
+	unsigned int m_filter_delay;
+	unsigned int m_lpf_len;
+	unsigned int m_fcch_burst_len;
+	float m_sample_rate;
+	float m_power;
+	float m_gradient;
+	float m_error;
+	complex *m_w;
+	circular_buffer *m_x_cb;
+	circular_buffer *m_y_cb;
+	circular_buffer *m_e_cb;
 
-	fftw_complex	*m_in, *m_out;
-	fftw_plan	m_plan;
+	fftw_complex *m_in, *m_out;
+	fftw_plan m_plan;
 };

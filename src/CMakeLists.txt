@@ -18,6 +18,6 @@ set(DEVICE_INC    ${XTRX_INCLUDES})
 include_directories(${DEVICE_INC} ${FFTW_INCLUDES})
 
 add_executable(kalibrate-xtrx ${kalibrate_files})
-target_link_libraries(kalibrate-xtrx ${DEVICE_LIBS} ${FFTW_LIB} pthread dl)
+target_link_libraries(kalibrate-xtrx ${DEVICE_LIBS} ${FFTW_LIB} pthread dl SoapySDR)
 
-
+set_property(TARGET kalibrate-xtrx PROPERTY CXX_STANDARD 98)
